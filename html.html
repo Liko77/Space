@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space Launch Simulator</title>
+<style>
+  body {
+    margin: 0;
+    background: linear-gradient(#000, #001);
+    font-family: Arial, sans-serif;
+    color: white;
+    overflow: hidden;
+  }
+  #gameCanvas {
+    background: radial-gradient(#000, #001);
+    display: block;
+    margin: 0 auto;
+    border: 2px solid #fff;
+  }
+  #info {
+    text-align: center;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+<div id="info">Score: <span id="score">0</span></div>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+let rocket = { x: 180, y: 500, width: 40, height: 60, speed: 5 };
+let obstacles = [];
+let score = 0;
+
+// Space infrastructure objects (like satellites, fuel depots)
+function createObstacle() {
+    const size = Math.random() * 30 + 20;
+    obstacles.push({
+        x: Math.random() * (canvas.width - size),
+        y: -size,
+        width: size,
+        height: size,
+        type: Math.random() > 0.5 ? 'bonus' : 'obstacle'
+    });
+}
+
+function drawRocket() {
+    ctx.fillStyle = "red";
+    ctx.fillRect(rocket.x, rocket.y, rocket.width, rocket.height);
+    ctx.fillStyle = "yellow";
+    ctx.fillRect(rocket.x + 15, rocket.y - 10, 10, 10); // flame
+}
+
+function drawObstacles() {
+    obstacles.forEach(o => {
+        ctx.fillStyle = o.type === 'bonus' ? 'green' : 'white';
+        ctx.fillRect(o.x, o.y, o.width, o.height);
+    });
+}
+
+function updateObstacles() {
+    obstacles.forEach(o => o.y += 2);
+    obstacles = obstacles.filter(o => o.y < canvas.height);
+}
+
+function checkCollision() {
+    obstacles.forEach((o, index) => {
+        if (rocket.x < o.x + o.width &&
+            rocket.x + rocket.width > o.x &&
+            rocket.y < o.y + o.height &&
+            rocket.y + rocket.height > o.y) {
+                if(o.type === 'bonus') {
+                    score += 10;
+                } else {
+                    score -= 5;
+                }
+                obstacles.splice(index, 1);
+                document.getElementById('score').innerText = score;
+        }
+    });
+}
+
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawRocket();
+    drawObstacles();
+    updateObstacles();
+    checkCollision();
+    requestAnimationFrame(gameLoop);
+}
+
+// Keyboard controls
+document.addEventListener('keydown', (e) => {
+    if(e.key === 'ArrowLeft' && rocket.x > 0) rocket.x -= rocket.speed;
+    if(e.key === 'ArrowRight' && rocket.x + rocket.width < canvas.width) rocket.x += rocket.speed;
+});
+
+setInterval(createObstacle, 1500);
+gameLoop();
+</script>
+
+</body>
+</html>
