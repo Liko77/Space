@@ -37,7 +37,6 @@ let rocket = { x: 180, y: 500, width: 40, height: 60, speed: 5 };
 let obstacles = [];
 let score = 0;
 
-// Space infrastructure objects (like satellites, fuel depots)
 function createObstacle() {
     const size = Math.random() * 30 + 20;
     obstacles.push({
@@ -53,7 +52,7 @@ function drawRocket() {
     ctx.fillStyle = "red";
     ctx.fillRect(rocket.x, rocket.y, rocket.width, rocket.height);
     ctx.fillStyle = "yellow";
-    ctx.fillRect(rocket.x + 15, rocket.y - 10, 10, 10); // flame
+    ctx.fillRect(rocket.x + 15, rocket.y - 10, 10, 10);
 }
 
 function drawObstacles() {
@@ -99,6 +98,27 @@ document.addEventListener('keydown', (e) => {
     if(e.key === 'ArrowLeft' && rocket.x > 0) rocket.x -= rocket.speed;
     if(e.key === 'ArrowRight' && rocket.x + rocket.width < canvas.width) rocket.x += rocket.speed;
 });
+
+// ---- TELEFON (TOUCH) KONTROLLERİ ----
+let startX = 0;
+
+canvas.addEventListener("touchstart", (e) => {
+    startX = e.touches[0].clientX;
+});
+
+canvas.addEventListener("touchmove", (e) => {
+    let currentX = e.touches[0].clientX;
+
+    if (currentX < startX - 10 && rocket.x > 0) {
+        rocket.x -= rocket.speed;
+    }
+    if (currentX > startX + 10 && rocket.x + rocket.width < canvas.width) {
+        rocket.x += rocket.speed;
+    }
+
+    startX = currentX;
+});
+<!-- ------------------------------- -->
 
 setInterval(createObstacle, 1500);
 gameLoop();
