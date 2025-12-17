@@ -5,9 +5,7 @@
 <title>LİKO AI BOT</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
 <style>
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
     margin: 0;
@@ -39,27 +37,12 @@ body {
     color: #38bdf8;
     letter-spacing: 2px;
     border-bottom: 1px solid rgba(56,189,248,0.25);
-    font-weight: bold;
 }
 
 #messages {
     flex: 1;
     padding: 15px;
     overflow-y: auto;
-    scroll-behavior: smooth;
-    word-wrap: break-word;
-}
-
-/* Modern scrollbar */
-#messages::-webkit-scrollbar {
-    width: 8px;
-}
-#messages::-webkit-scrollbar-thumb {
-    background: rgba(56,189,248,0.5);
-    border-radius: 4px;
-}
-#messages::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.1);
 }
 
 .user, .bot {
@@ -67,25 +50,20 @@ body {
     padding: 12px 16px;
     border-radius: 20px;
     margin: 8px 0;
-    animation: fade 0.3s ease;
     white-space: pre-wrap;
-    word-break: break-word;
-    line-height: 1.4;
-    font-size: 14.5px;
+    animation: fade 0.3s ease;
 }
 
 .user {
     margin-left: auto;
     background: linear-gradient(135deg,#2563eb,#38bdf8);
     color: white;
-    box-shadow: 0 0 12px rgba(56,189,248,0.5);
 }
 
 .bot {
     background: rgba(34,197,94,0.15);
     color: #22c55e;
     border: 1px solid rgba(34,197,94,0.4);
-    box-shadow: 0 0 10px rgba(34,197,94,0.2);
 }
 
 .input-area {
@@ -93,7 +71,6 @@ body {
     gap: 10px;
     padding: 14px;
     border-top: 1px solid rgba(56,189,248,0.25);
-    background: rgba(15,23,42,0.9);
 }
 
 input {
@@ -104,11 +81,6 @@ input {
     background: rgba(2,6,23,0.85);
     color: #38bdf8;
     outline: none;
-    transition: 0.2s;
-}
-input:focus {
-    box-shadow: 0 0 10px #38bdf8;
-    background: rgba(2,6,23,1);
 }
 
 button {
@@ -116,14 +88,7 @@ button {
     border-radius: 14px;
     border: none;
     background: linear-gradient(135deg,#22c55e,#38bdf8);
-    color: #000;
     cursor: pointer;
-    transition: 0.3s;
-    font-weight: bold;
-}
-button:hover {
-    box-shadow: 0 0 20px #38bdf8;
-    transform: scale(1.08);
 }
 
 @keyframes fade {
@@ -133,6 +98,7 @@ button:hover {
 </style>
 </head>
 <body>
+
 <div class="chat">
     <div class="header">◉ LİKO AI ◉</div>
     <div id="messages"></div>
@@ -143,21 +109,20 @@ button:hover {
 </div>
 
 <script>
+const ADMIN_PASSWORD = "liko1234"; // 🔴 BUNU DEĞİŞTİR
+let isAdmin = false;
+
 const knowledgeBase = {
-    "selam": ["Selam 👋 umarım günün iyi geçiyordur"],
-    "nasılsın": ["Harikayım ⚡","Kodluyorum 🤖"],
-    "ai": ["Ben bir yapay zekâyım."],
-    "yapay zeka": ["Düşünen makineler 🧠"],
+    "selam": ["Selam 👋"],
+    "nasılsın": ["İyiyim ⚡", "Hazırım 🤖"],
     "html": ["HTML = yapı"],
     "css": ["CSS = stil"],
-    "javascript": ["JS = beyin"],
-    "roblox": ["Roblox Lua kullanır 🎮"],
-    "discord": ["Discord botları efsanedir 💬"]
+    "javascript": ["JS = beyin"]
 };
 
 let memory = JSON.parse(localStorage.getItem("aiMemory")) || {};
 
-document.getElementById("input").addEventListener("keydown", function(e){
+document.getElementById("input").addEventListener("keydown", e => {
     if(e.key === "Enter") send();
 });
 
@@ -165,8 +130,10 @@ function send() {
     const input = document.getElementById("input");
     const msg = input.value.trim();
     if(!msg) return;
+
     addMessage("user", msg);
     input.value = "";
+
     setTimeout(() => {
         const reply = getAIResponse(msg);
         typeBot(reply);
@@ -177,54 +144,59 @@ function addMessage(type, text) {
     const div = document.createElement("div");
     div.className = type;
     div.textContent = text;
-    document.getElementById("messages").appendChild(div);
-    scrollDown();
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
 }
 
 function typeBot(text) {
     const div = document.createElement("div");
     div.className = "bot";
-    document.getElementById("messages").appendChild(div);
+    messages.appendChild(div);
     let i = 0;
-    const interval = setInterval(() => {
-        div.textContent = text.slice(0, i+1);
-        i++;
-        scrollDown();
-        if(i >= text.length) clearInterval(interval);
+    const t = setInterval(() => {
+        div.textContent = text.slice(0, ++i);
+        messages.scrollTop = messages.scrollHeight;
+        if(i >= text.length) clearInterval(t);
     }, 30);
 }
 
-function scrollDown() {
-    const msgBox = document.getElementById("messages");
-    msgBox.scrollTop = msgBox.scrollHeight;
-}
-
 function getAIResponse(msg) {
- 
+    const lower = msg.toLowerCase();
+
+    // ADMIN LOGIN
+    if(lower.startsWith("/admin ")) {
+        const pass = msg.split(" ")[1];
+        if(pass === ADMIN_PASSWORD) {
+            isAdmin = true;
+            return "🔓 Admin modu AKTİF";
+        } else {
+            return "❌ Hatalı parola";
+        }
+    }
+
+    // ÖĞRETME (SADECE ADMIN)
     if(msg.includes("=")) {
-        let parts = msg.split("=");
-        let key = parts[0].trim().toLowerCase();
-        let value = parts.slice(1).join("=").trim();
-        if(key && value) {
-            memory[key] = value;
-            localStorage.setItem("aiMemory", JSON.stringify(memory));
-            return `Tamam 👍 "${key}" bilgisini hafızama kaydettim 🧠`;
-        }
+        if(!isAdmin) return "⛔ Yetkin yok (admin ol)";
+        let [key, value] = msg.split("=");
+        key = key.trim().toLowerCase();
+        value = value.trim();
+        memory[key] = value;
+        localStorage.setItem("aiMemory", JSON.stringify(memory));
+        return `✅ "${key}" kaydedildi`;
     }
 
-   
-    if(memory[msg.toLowerCase()]) return memory[msg.toLowerCase()];
+    if(memory[lower]) return memory[lower];
 
-  
-    for(let key in knowledgeBase){
-        if(msg.toLowerCase().includes(key)) {
+    for(let key in knowledgeBase) {
+        if(lower.includes(key)) {
             let arr = knowledgeBase[key];
-            return arr[Math.floor(Math.random()*arr.length)];
+            return arr[Math.floor(Math.random() * arr.length)];
         }
     }
 
-    return "Bunu bilmiyorum 🤔 Öğretmek ister misin? (x = y)";
+    return "Bilmiyorum 🤔 (Admin öğretir)";
 }
 </script>
+
 </body>
 </html>
